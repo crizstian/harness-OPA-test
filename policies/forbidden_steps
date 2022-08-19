@@ -1,0 +1,16 @@
+package pipeline_forbidden
+
+# Deny pipelines that are missing required steps
+deny[sprintf("deployment stage '%s' has step '%s' that is forbidden type '%s'", [stage.name, step.name, step.type])] {
+    stage = input.pipeline.stages[_].stage      # Find all stages ...
+    stage.type == "Deployment"                  # ... that are deployments
+    step = stage.spec.execution.steps[_].step   # Find all steps in each stage ...
+    forbidden_steps[_] = step.type              # ... that use forbidden types
+}
+
+# Steps that should not used in deployments - try adding "HarnessApproval" to this list to see the policy fail
+forbidden_steps = ["ShellScript"]
+
+contains(arr, elem) {
+  arr[_] = elem
+}

@@ -1,0 +1,17 @@
+package pipeline_required
+
+# Deny pipelines that are missing required steps
+deny[sprintf("CI stage '%s' is missing required template '%s'", [stage.name, required_steps])] {
+    stage = input.pipeline.stages[i].stage                                # Find all stages ...
+    stage.type == "CI"                                            # ... that are deployments
+    existing_steps := [ s | s = stage.spec.execution.steps[_].step.type ] # ... and create a list of all step types in use
+    required_step := required_steps[_]                                    # For each required step ...
+    not contains(existing_steps, required_step)                           # ... check if it's present in the existing steps
+}
+
+# Steps that must be present in every deployment - try adding ShellScript to this list to see the policy fail
+required_steps = ["sonarQube-scan"]
+
+contains(arr, elem) {
+  arr[_] = elem
+}

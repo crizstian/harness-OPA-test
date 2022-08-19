@@ -1,0 +1,10 @@
+package pipeline
+
+# Deny pipelines that are missing required steps
+deny[sprintf("deployment stage '%s' has sloErrorBudgetRemainingPercentage less than 80", [stage.name])] {
+    stage = input.pipeline.stages[_].stage      # Find all stages ...
+    stage.type == "Deployment"                  # ... that are deployments
+    stage.spec.serviceConfig.service.name == "payment-service-srm" # ... that are configured for order service dev
+    sloPolicy = stage.spec.sloPolicy                                                  
+    sloPolicy.sloErrorBudgetRemainingPercentage<80
+}

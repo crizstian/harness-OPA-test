@@ -1,0 +1,9 @@
+package pipeline_forbidden
+
+# Deny pipelines that include forbidden commands 
+deny[sprintf("stage '%s' has forbidden command '%s'", [stage.name, step.name, step.type])] {
+    stage = input.pipeline.stages[_].stage      # Find all stages ...
+    stage.type == "CI"                  # ... that are builds
+    step = stage.spec.execution.steps[_].step   # Find all steps in each stage ...
+    contains(input.pipeline.stages[_].stage.spec.execution.steps[_].step.spec.command, "sudo")
+}

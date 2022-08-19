@@ -1,0 +1,15 @@
+package pipeline_environment
+
+# Deny pipelines that do not use allowed environments
+deny[sprintf("deployment stage '%s' cannot be deployed to environment '%s'", [stage.name, stage.spec.infrastructure.environmentRef])] {
+    stage = input.pipeline.stages[_].stage                                        # Find all stages ...
+    stage.type == "Deployment"                                                    # ... that are deployments
+    not contains(allowed_environments, stage.spec.infrastructure.environmentRef)  # ... that do not use one of the allowed environments
+}
+
+# Environments that can be used for deployment - try removing "test" from this list to see the policy fail
+allowed_environments = ["dev", "test"]
+
+contains(arr, elem) {
+  arr[_] = elem
+}
